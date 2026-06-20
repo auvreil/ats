@@ -22,7 +22,7 @@
     
     <hr class="nav-divider">
 
-    <main class="content-container">
+   <main class="content-container">
       
       <section id="metadata-remover" class="tool-section">
         <h2>image metadata remover</h2>
@@ -36,7 +36,10 @@
           </div>
 
           <div class="preview-pane" id="preview-area" style="display: none; width: 100%;">
-            <span class="preview-label">wiped previews</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 12px;">
+              <span class="preview-label">wiped previews</span>
+              <button type="button" class="btn download-btn" id="download-all-btn" style="display: none;">download all cleaned files</button>
+            </div>
             <div id="previews-container" style="display: flex; flex-direction: column; gap: 24px; width: 100%; margin-top: 12px;"></div>
           </div>
         </div>
@@ -52,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusText = document.getElementById('file-status');
   const previewArea = document.getElementById('preview-area');
   const previewsContainer = document.getElementById('previews-container');
+  const downloadAllBtn = document.getElementById('download-all-btn');
+  let processedFiles = [];
 
   uploadTrigger.addEventListener('click', (e) => {
     e.preventDefault();
@@ -67,13 +72,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const totalFiles = files.length;
     statusText.textContent = `processing 1 of ${totalFiles}...`;
+    
     previewsContainer.innerHTML = '';
     previewArea.style.display = 'flex';
-
+    downloadAllBtn.style.display = totalFiles > 1 ? 'inline-block' : 'none';
+    
+    processedFiles = []; 
     let completedCount = 0;
     let failedCount = 0;
 
-    Array.from(files).forEach((file, index) => {
+    Array.from(files).forEach((file) => {
       const reader = new FileReader();
 
       reader.onload = function(event) {
@@ -91,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cleanDataUrl = canvas.toDataURL('image/png');
             const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
             const cleanedFileName = `${baseName}_ats.png`;
+            processedFiles.push({ url: cleanDataUrl, name: cleanedFileName });
             const fileRow = document.createElement('div');
             fileRow.style.cssText = "display: flex; flex-direction: column; gap: 10px; align-items: flex-start; width: 100%; border-bottom: 1px dashed var(--border); padding-bottom: 16px;";
             
@@ -103,16 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             previewsContainer.appendChild(fileRow);
-            if (totalFiles > 1) {
-              setTimeout(() => {
-                const autoDownload = document.createElement('a');
-                autoDownload.href = cleanDataUrl;
-                autoDownload.download = cleanedFileName;
-                document.body.appendChild(autoDownload);
-                autoDownload.click();
-                document.body.removeChild(autoDownload);
-              }, index * 300); 
-            }
 
             completedCount++;
             updateBatchStatus(completedCount, failedCount, totalFiles);
@@ -151,9 +150,21 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           statusText.textContent = `all ${success} files stripped successfully.`;
         }
-        imageInput.value = ''; 
+        imageInput.value = '';
       }
     }
+  });
+  downloadAllBtn.addEventListener('click', () => {
+    processedFiles.forEach((file, index) => {
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = file.url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, index * 250); 
+    });
   });
 });
 </script>
