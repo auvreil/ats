@@ -49,51 +49,65 @@
 
   <script>
     document.getElementById('image-input').addEventListener('change', function(e) {
-      const file = e.target.files;
-      if (!file) return;
+  if (!e.target.files || e.target.files.length === 0) {
+    return;
+  }
+  
+  const file = e.target.files;
+  const statusText = document.getElementById('file-status');
+  const previewArea = document.getElementById('preview-area');
+  const outputPreview = document.getElementById('output-preview');
+  const downloadLink = document.getElementById('download-link');
 
-      const statusText = document.getElementById('file-status');
-      const previewArea = document.getElementById('preview-area');
-      const outputPreview = document.getElementById('output-preview');
-      const downloadLink = document.getElementById('download-link');
+  statusText.textContent = `Processing: ${file.name}`;
 
-      statusText.textContent = `Processing: ${file.name}`;
+  const reader = new FileReader();
+  
+  reader.onload = function(event) {
+    const img = new Image();
+    
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(function(blob) {
+        if (!blob) {
+          statusText.textContent = "Error: Canvas processing failed.";
+          return;
+        }
+        const cleanUrl = URL.createObjectURL(blob);
+        
+        outputPreview.src = cleanUrl;
+        downloadLink.href = cleanUrl;
+        
+        const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+        downloadLink.setAttribute('download', `${baseName}_cleaned.png`);
+        
+        statusText.textContent = `Success: Metadata stripped.`;
+        previewArea.style.display = 'flex';
+      }, 'image/png'); 
+    };
 
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-          // start canvas canvas context
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          // match dimensions precisely 
-          canvas.width = img.width;
-          canvas.height = img.height;
-          
-          // repaint raw data onto canvas (effectively drops binary headers/metadata structures)
-          ctx.drawImage(img, 0, 0);
-          
-          // Export payload to an isolated clean data blob
-          canvas.toBlob(function(blob) {
-            const cleanUrl = URL.createObjectURL(blob);
-            
-            // starts to render outputs
-            outputPreview.src = cleanUrl;
-            downloadLink.href = cleanUrl;
-            
-            // dynamically alter target file naming structure
-            const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-            downloadLink.setAttribute('download', `${baseName}_cleaned.png`);
-            
-            statusText.textContent = `Success: Metadata stripped.`;
-            previewArea.style.display = 'flex';
-          }, 'image/png'); 
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
+    img.onerror = function() {
+      statusText.textContent = "Error: Failed to load image file locally.";
+    };
+
+    img.src = event.target.result;
+  };
+
+  reader.onerror = function() {
+    statusText.textContent = "Error: Failed to read file data.";
+  };
+  try {
+    reader.readAsDataURL(file);
+  } catch (err) {
+    statusText.textContent = "Error: Invalid file object structure.";
+    console.error(err);
+  }
+});
   </script>
 </body>
 </html>
