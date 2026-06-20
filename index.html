@@ -56,8 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewArea = document.getElementById('preview-area');
   const outputPreview = document.getElementById('output-preview');
   const downloadLink = document.getElementById('download-link');
-
-
   imageInput.setAttribute('multiple', 'true');
 
   uploadTrigger.addEventListener('click', (e) => {
@@ -72,10 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    statusText.textContent = `Processing ${files.length} file(s)...`;
+    const totalFiles = files.length;
+    statusText.textContent = `processing 1 of ${totalFiles}...`;
 
-
-  
+    let completedCount = 0;
+    let failedCount = 0;
     Array.from(files).forEach((file, index) => {
       const reader = new FileReader();
 
@@ -93,40 +92,65 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             const cleanDataUrl = canvas.toDataURL('image/png');
             const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-            const cleanedFileName = `${baseName}_cleaned.png`;
-            if (index === files.length - 1) {
+            const cleanedFileName = `${baseName}_ats.png`;
+            if (completedCount === 0 || index === totalFiles - 1) {
               outputPreview.src = cleanDataUrl;
               downloadLink.href = cleanDataUrl;
               downloadLink.setAttribute('download', cleanedFileName);
               previewArea.style.display = 'flex';
-              statusText.textContent = `all files stripped successfully.`;
             }
-            if (files.length > 1) {
-              const autoDownload = document.createElement('a');
-              autoDownload.href = cleanDataUrl;
-              autoDownload.download = cleanedFileName;
-              autoDownload.click();
+            if (totalFiles === 1) {
+              statusText.textContent = `metadata stripped.`;
+            } else {
+              setTimeout(() => {
+                const autoDownload = document.createElement('a');
+                autoDownload.href = cleanDataUrl;
+                autoDownload.download = cleanedFileName;
+                document.body.appendChild(autoDownload);
+                autoDownload.click();
+                document.body.removeChild(autoDownload);
+              }, index * 200);
             }
 
+            completedCount++;
+            updateBatchStatus(completedCount, failedCount, totalFiles);
+
           } catch (canvasErr) {
-            statusText.textContent = "canvas extraction failed.";
-            console.error(canvasErr);
+            console.error("canvas error:", canvasErr);
+            failedCount++;
+            updateBatchStatus(completedCount, failedCount, totalFiles);
           }
         };
 
         img.onerror = function() {
-          statusText.textContent = `corrupt payload in: ${file.name}`;
+          console.error("img load failed for:", file.name);
+          failedCount++;
+          updateBatchStatus(completedCount, failedCount, totalFiles);
         };
 
         img.src = event.target.result;
       };
 
       reader.onerror = function() {
-        statusText.textContent = "browser failed to read file.";
+        console.error("filereader error for:", file.name);
+        failedCount++;
+        updateBatchStatus(completedCount, failedCount, totalFiles);
       };
+
       reader.readAsDataURL(file);
     });
-    imageInput.value = '';
+    function updateBatchStatus(success, fail, total) {
+      if (success + fail < total) {
+        statusText.textContent = `processing ${success + fail + 1} of ${total}...`;
+      } else {
+        if (fail > 0) {
+          statusText.textContent = `done. cleaned: ${success}, Failed: ${fail}`;
+        } else {
+          statusText.textContent = `all ${success} files stripped successfully.`;
+        }
+        imageInput.value = '';
+      }
+    }
   });
 });
 </script>
