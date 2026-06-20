@@ -30,8 +30,8 @@
         <div class="hotlink-container">
           <div class="upload-zone">
             <input type="file" id="image-input" accept="image/jpeg, image/png, image/webp" style="display: none;">
-            <button type="button" class="btn" onclick="document.getElementById('image-input').click()">SELECT IMAGE</button>
-            <span id="file-status" class="status-text">No file selected</span>
+            <button type="button" class="btn" onclick="document.getElementById('image-input').click()">select image</button>
+            <span id="file-status" class="status-text">no file selected</span>
           </div>
 
           <div class="preview-pane" id="preview-area" style="display: none;">
@@ -48,65 +48,63 @@
   </div>
 
   <script>
-    document.getElementById('image-input').addEventListener('change', function(e) {
-  if (!e.target.files || e.target.files.length === 0) {
-    return;
-  }
-  
-  const file = e.target.files;
+document.getElementById('image-input').addEventListener('change', function(e) {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+
+  const file = files;
   const statusText = document.getElementById('file-status');
   const previewArea = document.getElementById('preview-area');
   const outputPreview = document.getElementById('output-preview');
   const downloadLink = document.getElementById('download-link');
 
   statusText.textContent = `Processing: ${file.name}`;
-
-  const reader = new FileReader();
-  
-  reader.onload = function(event) {
-    const img = new Image();
-    
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob(function(blob) {
-        if (!blob) {
-          statusText.textContent = "Error: Canvas processing failed.";
-          return;
-        }
-        const cleanUrl = URL.createObjectURL(blob);
-        
-        outputPreview.src = cleanUrl;
-        downloadLink.href = cleanUrl;
-        
-        const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-        downloadLink.setAttribute('download', `${baseName}_cleaned.png`);
-        
-        statusText.textContent = `Success: Metadata stripped.`;
-        previewArea.style.display = 'flex';
-      }, 'image/png'); 
-    };
-
-    img.onerror = function() {
-      statusText.textContent = "Error: Failed to load image file locally.";
-    };
-
-    img.src = event.target.result;
-  };
-
-  reader.onerror = function() {
-    statusText.textContent = "Error: Failed to read file data.";
-  };
+  let objectUrl;
   try {
-    reader.readAsDataURL(file);
+    objectUrl = URL.createObjectURL(file);
   } catch (err) {
-    statusText.textContent = "Error: Invalid file object structure.";
+    statusText.textContent = "browser failed to generate data reference.";
     console.error(err);
+    return;
   }
+
+  const img = new Image();
+  
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+    
+    canvas.toBlob(function(blob) {
+      URL.revokeObjectURL(objectUrl);
+
+      if (!blob) {
+        statusText.textContent = "canvas extraction failed.";
+        return;
+      }
+      
+      const cleanUrl = URL.createObjectURL(blob);
+      
+      outputPreview.src = cleanUrl;
+      downloadLink.href = cleanUrl;
+      
+      const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      downloadLink.setAttribute('download', `${baseName}_cleaned.png`);
+      
+      statusText.textContent = `metadata stripped.`;
+      previewArea.style.display = 'flex';
+    }, 'image/png'); 
+  };
+
+  img.onerror = function() {
+    URL.revokeObjectURL(objectUrl);
+    statusText.textContent = "invalid image payload or corrupt file formatting.";
+  };
+
+  img.src = objectUrl;
 });
   </script>
 </body>
