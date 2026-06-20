@@ -48,76 +48,87 @@
     </main>
   </div>
 
-  <script>
-   document.addEventListener('DOMContentLoaded', () => {
+<script>
+document.addEventListener('DOMContentLoaded', () => {
   const uploadTrigger = document.getElementById('upload-trigger');
   const imageInput = document.getElementById('image-input');
   const statusText = document.getElementById('file-status');
   const previewArea = document.getElementById('preview-area');
   const outputPreview = document.getElementById('output-preview');
   const downloadLink = document.getElementById('download-link');
+
+
+  imageInput.setAttribute('multiple', 'true');
+
   uploadTrigger.addEventListener('click', (e) => {
     e.preventDefault();
     imageInput.click();
   });
 
   imageInput.addEventListener('change', function(e) {
-    if (!e.target.files || e.target.files.length === 0) {
+    const files = e.target.files;
+    if (!files || files.length === 0) {
       statusText.textContent = "no file selected";
       return;
     }
 
-    const file = e.target.files;
-    statusText.textContent = `Processing: ${file.name}`;
+    statusText.textContent = `Processing ${files.length} file(s)...`;
 
-    const reader = new FileReader();
 
-    reader.onload = function(event) {
-      const img = new Image();
-      
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+  
+    Array.from(files).forEach((file, index) => {
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        const img = new Image();
         
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        
-        try {
-          const cleanDataUrl = canvas.toDataURL('image/png');
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
           
-          outputPreview.src = cleanDataUrl;
-          downloadLink.href = cleanDataUrl;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
           
-          const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-          downloadLink.setAttribute('download', `${baseName}_cleaned.png`);
-          
-          statusText.textContent = `metadata stripped.`;
-          previewArea.style.display = 'flex';
-        } catch (canvasErr) {
-          statusText.textContent = "canvas extraction failed.";
-          console.error(canvasErr);
-        }
-        
-        imageInput.value = '';
+          try {
+            const cleanDataUrl = canvas.toDataURL('image/png');
+            const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+            const cleanedFileName = `${baseName}_cleaned.png`;
+            if (index === files.length - 1) {
+              outputPreview.src = cleanDataUrl;
+              downloadLink.href = cleanDataUrl;
+              downloadLink.setAttribute('download', cleanedFileName);
+              previewArea.style.display = 'flex';
+              statusText.textContent = `all files stripped successfully.`;
+            }
+            if (files.length > 1) {
+              const autoDownload = document.createElement('a');
+              autoDownload.href = cleanDataUrl;
+              autoDownload.download = cleanedFileName;
+              autoDownload.click();
+            }
+
+          } catch (canvasErr) {
+            statusText.textContent = "canvas extraction failed.";
+            console.error(canvasErr);
+          }
+        };
+
+        img.onerror = function() {
+          statusText.textContent = `corrupt payload in: ${file.name}`;
+        };
+
+        img.src = event.target.result;
       };
 
-      img.onerror = function() {
-        statusText.textContent = "invalid image payload or corrupt file formatting.";
-        imageInput.value = '';
+      reader.onerror = function() {
+        statusText.textContent = "browser failed to read file.";
       };
-
-      img.src = event.target.result;
-    };
-
-    reader.onerror = function() {
-      statusText.textContent = "browser failed to generate data reference.";
-      imageInput.value = '';
-    };
-
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    });
+    imageInput.value = '';
   });
 });
-  </script>
+</script>
 </body>
 </html>
