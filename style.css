@@ -1,0 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen:wght@400;700&display=swap');
+
+:root {
+  --bg: #0a0a14; 
+  --bg2: #0f0f1e;
+  --panel: #0d0d22;
+  --border: #2a2a5a;
+  --accent1: #ff79c6;
+  --accent2: #bd93f9;
+  --accent3: #50fa7b;
+  --accent4: #ffb86c;
+  --accent5: #8be9fd;
+  --text: #f8f8f2;
+  --text-dim: #a0a0c0;
+  --text-muted: #6060a0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.page-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+.site-header {
+  text-align: center;
+  padding: 30px 10px 10px;
+}
+
+h1 {
+  font-family: 'VT323', monospace;
+  font-size: clamp(24px, 5vw, 42px);
+  color: var(--accent1);
+  letter-spacing: 2px;
+  animation: flicker 8s ease-in-out infinite;
+  margin-bottom: 4px;
+}
+
+h1.subtitle {
+  font-size: clamp(14px, 3vw, 20px);
+  color: var(--text-muted);
+  animation-delay: 3s;
+}
+
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96% { opacity: 0.8; }
+  97% { opacity: 1; }
+  98% { opacity: 0.7; }
+  99% { opacity: 1; }
+}
+
+h2.notice {
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  color: var(--accent4);
+  text-align: center;
+  margin: 10px auto 24px;
+  max-width: 680px;
+  padding: 6px 12px;
+  border-left: 2px solid var(--accent4);
+  background: rgba(255, 184, 108, 0.03);
+}
+
+.nav {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.nav a {
+  font-family: 'Silkscreen', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-decoration: none;
+  margin: 0 10px;
+  letter-spacing: 1px;
+  display: inline-block;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.1s, color 0.1s;
+}
+
+.nav a:hover, .nav a.active {
+  color: var(--accent5);
+  border-bottom-color: var(--accent5);
+}
+
+.nav-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0 30px;
+}
+
+h2:not(.notice) {
+  font-family: 'Silkscreen', monospace;
+  font-size: 13px;
+  color: var(--accent3);
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.tool-section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.tool-desc {
+  color: var(--text-dim);
+  font-size: 17px;
+  margin-bottom: 20px;
+}
+
+.hotlink-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  align-items: flex-start;
+}
+
+.upload-zone {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Functionalized Button Styles matching your project architecture */
+.btn {
+  display: inline-block;
+  font-family: 'Silkscreen', monospace;
+  font-size: 11px;
+  background: var(--panel);
+  color: var(--accent5);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: all 0.1s ease;
+}
+
+.btn:hover {
+  color: var(--accent1);
+  border-color: var(--accent1);
+  background: rgba(255, 121, 198, 0.05);
+}
+
+.status-text {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.preview-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+.preview-label {
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  color: var(--accent4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.img-frame {
+  border: 1px solid var(--border);
+  padding: 4px;
+  background: var(--panel);
+  max-width: 100%;
+}
+
+.preview-pane img {
+  display: block;
+  max-width: 100%;
+  max-height: 300px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.download-btn {
+  color: var(--accent3);
+  border-color: var(--border);
+}
+
+.download-btn:hover {
+  color: var(--bg);
+  background: var(--accent3);
+  border-color: var(--accent3);
+}
+
+.disclaimer {
+  margin-top: 40px;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--border);
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+::selection {
+  background: var(--accent2);
+  color: var(--bg);
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 24px; }
+  h1.subtitle { font-size: 14px; }
+  h2:not(.notice) { font-size: 11px; }
+  .nav a { font-size: 9px; margin: 0 4px; }
+  .tool-section { padding: 16px; }
+}
