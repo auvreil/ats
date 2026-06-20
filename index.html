@@ -30,17 +30,14 @@
         
         <div class="hotlink-container">
           <div class="upload-zone">
-            <input type="file" id="image-input" accept="image/jpeg, image/png, image/webp" style="display: none;">
-            <button type="button" class="btn" id="upload-trigger">select image</button>
-            <span id="file-status" class="status-text">no file selected</span>
+            <input type="file" id="image-input" accept="image/jpeg, image/png, image/webp" multiple style="display: none;">
+            <button type="button" class="btn" id="upload-trigger">select images</button>
+            <span id="file-status" class="status-text">no files selected</span>
           </div>
 
-          <div class="preview-pane" id="preview-area" style="display: none;">
-            <span class="preview-label">wiped preview</span>
-            <div class="img-frame">
-              <img id="output-preview" alt="processed output preview">
-            </div>
-            <a id="download-link" class="btn download-btn">download cleaned file</a>
+          <div class="preview-pane" id="preview-area" style="display: none; width: 100%;">
+            <span class="preview-label">wiped previews</span>
+            <div id="previews-container" style="display: flex; flex-direction: column; gap: 24px; width: 100%; margin-top: 12px;"></div>
           </div>
         </div>
       </section>
@@ -54,9 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const imageInput = document.getElementById('image-input');
   const statusText = document.getElementById('file-status');
   const previewArea = document.getElementById('preview-area');
-  const outputPreview = document.getElementById('output-preview');
-  const downloadLink = document.getElementById('download-link');
-  imageInput.setAttribute('multiple', 'true');
+  const previewsContainer = document.getElementById('previews-container');
 
   uploadTrigger.addEventListener('click', (e) => {
     e.preventDefault();
@@ -72,9 +67,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const totalFiles = files.length;
     statusText.textContent = `processing 1 of ${totalFiles}...`;
+    previewsContainer.innerHTML = '';
+    previewArea.style.display = 'flex';
 
     let completedCount = 0;
     let failedCount = 0;
+
     Array.from(files).forEach((file, index) => {
       const reader = new FileReader();
 
@@ -93,15 +91,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const cleanDataUrl = canvas.toDataURL('image/png');
             const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
             const cleanedFileName = `${baseName}_ats.png`;
-            if (completedCount === 0 || index === totalFiles - 1) {
-              outputPreview.src = cleanDataUrl;
-              downloadLink.href = cleanDataUrl;
-              downloadLink.setAttribute('download', cleanedFileName);
-              previewArea.style.display = 'flex';
-            }
-            if (totalFiles === 1) {
-              statusText.textContent = `metadata stripped.`;
-            } else {
+            const fileRow = document.createElement('div');
+            fileRow.style.cssText = "display: flex; flex-direction: column; gap: 10px; align-items: flex-start; width: 100%; border-bottom: 1px dashed var(--border); padding-bottom: 16px;";
+            
+            fileRow.innerHTML = `
+              <span style="font-size: 15px; color: var(--accent2);">${file.name}</span>
+              <div class="img-frame">
+                <img src="${cleanDataUrl}" alt="processed output preview" style="display: block; max-width: 100%; max-height: 250px; image-rendering: pixelated; image-rendering: crisp-edges;">
+              </div>
+              <a href="${cleanDataUrl}" download="${cleanedFileName}" class="btn download-btn">download cleaned file</a>
+            `;
+
+            previewsContainer.appendChild(fileRow);
+            if (totalFiles > 1) {
               setTimeout(() => {
                 const autoDownload = document.createElement('a');
                 autoDownload.href = cleanDataUrl;
@@ -109,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(autoDownload);
                 autoDownload.click();
                 document.body.removeChild(autoDownload);
-              }, index * 200);
+              }, index * 300); 
             }
 
             completedCount++;
@@ -139,16 +141,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       reader.readAsDataURL(file);
     });
+
     function updateBatchStatus(success, fail, total) {
       if (success + fail < total) {
         statusText.textContent = `processing ${success + fail + 1} of ${total}...`;
       } else {
         if (fail > 0) {
-          statusText.textContent = `done. cleaned: ${success}, Failed: ${fail}`;
+          statusText.textContent = `done. cleaned: ${success}, failed: ${fail}`;
         } else {
           statusText.textContent = `all ${success} files stripped successfully.`;
         }
-        imageInput.value = '';
+        imageInput.value = ''; 
       }
     }
   });
