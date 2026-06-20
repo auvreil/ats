@@ -13,24 +13,23 @@
       <h1>ATS</h1>
       <h1 class="subtitle">auvreil's tools n stuffs</h1>
     </header>
-
+<!--
     <nav class="nav">
       <a href="#metadata-remover" class="active">metadata remover</a>
-      </nav>
+    </nav>
+    -->
     <hr class="nav-divider">
-
-    <h2 class="notice">all changes are performed locally in your browser. your files are never uploaded to a server.</h2>
 
     <main class="content-container">
       
       <section id="metadata-remover" class="tool-section">
-        <h2>Image Metadata Scrubber</h2>
+        <h2>image metadata remover</h2>
         <p class="tool-desc">strips EXIF, GPS, camera specs, and other hidden identifier tags from images by re-drawing the raw pixel payload onto a clean canvas container.</p>
         
         <div class="hotlink-container">
           <div class="upload-zone">
             <input type="file" id="image-input" accept="image/jpeg, image/png, image/webp" style="display: none;">
-            <button type="button" class="btn" onclick="document.getElementById('image-input').click()">select image</button>
+            <button type="button" class="btn" id="upload-trigger">select image</button>
             <span id="file-status" class="status-text">no file selected</span>
           </div>
 
@@ -39,73 +38,82 @@
             <div class="img-frame">
               <img id="output-preview" alt="processed output preview">
             </div>
-            <a id="download-link" class="btn download-btn" download="cleaned_image.png">download cleaned file</a>
+            <a id="download-link" class="btn download-btn">download cleaned file</a>
           </div>
         </div>
       </section>
 
-      </main>
+    </main>
   </div>
 
   <script>
-document.getElementById('image-input').addEventListener('change', function(e) {
-  const files = e.target.files;
-  if (!files || files.length === 0) return;
+    document.addEventListener('DOMContentLoaded', () => {
+      const uploadTrigger = document.getElementById('upload-trigger');
+      const imageInput = document.getElementById('image-input');
+      const statusText = document.getElementById('file-status');
+      const previewArea = document.getElementById('preview-area');
+      const outputPreview = document.getElementById('output-preview');
+      const downloadLink = document.getElementById('download-link');
 
-  const file = files;
-  const statusText = document.getElementById('file-status');
-  const previewArea = document.getElementById('preview-area');
-  const outputPreview = document.getElementById('output-preview');
-  const downloadLink = document.getElementById('download-link');
+      uploadTrigger.addEventListener('click', () => {
+        imageInput.click();
+      });
 
-  statusText.textContent = `Processing: ${file.name}`;
-  let objectUrl;
-  try {
-    objectUrl = URL.createObjectURL(file);
-  } catch (err) {
-    statusText.textContent = "browser failed to generate data reference.";
-    console.error(err);
-    return;
-  }
+      imageInput.addEventListener('change', function(e) {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
-  const img = new Image();
-  
-  img.onload = function() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
-    
-    canvas.toBlob(function(blob) {
-      URL.revokeObjectURL(objectUrl);
+        // FIXED: Explicitly extraction index item 0 out of the FileList
+        const file = files;
+        statusText.textContent = `Processing: ${file.name}`;
 
-      if (!blob) {
-        statusText.textContent = "canvas extraction failed.";
-        return;
-      }
-      
-      const cleanUrl = URL.createObjectURL(blob);
-      
-      outputPreview.src = cleanUrl;
-      downloadLink.href = cleanUrl;
-      
-      const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-      downloadLink.setAttribute('download', `${baseName}_cleaned.png`);
-      
-      statusText.textContent = `metadata stripped.`;
-      previewArea.style.display = 'flex';
-    }, 'image/png'); 
-  };
+        const reader = new FileReader();
 
-  img.onerror = function() {
-    URL.revokeObjectURL(objectUrl);
-    statusText.textContent = "invalid image payload or corrupt file formatting.";
-  };
+        reader.onload = function(event) {
+          const img = new Image();
+          
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            try {
+              const cleanDataUrl = canvas.toDataURL('image/png');
+              
+              outputPreview.src = cleanDataUrl;
+              downloadLink.href = cleanDataUrl;
+              
+              const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+              downloadLink.setAttribute('download', `${baseName}_cleaned.png`);
+              
+              statusText.textContent = `metadata stripped.`;
+              previewArea.style.display = 'flex';
+            } catch (canvasErr) {
+              statusText.textContent = "canvas extraction failed.";
+              console.error(canvasErr);
+            }
+            imageInput.value = '';
+          };
 
-  img.src = objectUrl;
-});
+          img.onerror = function() {
+            statusText.textContent = "invalid image payload or corrupt file formatting.";
+            imageInput.value = '';
+          };
+
+          img.src = event.target.result;
+        };
+
+        reader.onerror = function() {
+          statusText.textContent = "browser failed to generate data reference.";
+          imageInput.value = '';
+        };
+
+        reader.readAsDataURL(file);
+      });
+    });
   </script>
 </body>
 </html>
