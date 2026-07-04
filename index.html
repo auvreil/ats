@@ -14,316 +14,42 @@
       <h1 class="subtitle">auvreil's tools n stuffs</h1>
     </header>
     
-    <!--
-    <nav class="nav">
-      <a href="#metadata-remover" class="active">metadata remover</a>
-    </nav>
-    -->
-    
     <hr class="nav-divider">
 
-   <main class="content-container">
-            <section id="image-converter" class="tool-section">
-        <h2>image converter</h2>
-        <p class="tool-desc">convert images between PNG, JPEG, and WebP. lossless or with quality control.</p>
+    <main class="content-container">
+
+
+
+
+       <!-- start tool1 -->
+      <section id="example-tool-id" class="tool-section">
+        <h2>testVer</h2>
+        <p class="tool-desc">description</p>
        
-        <div class="hotlink-container">
-          <div class="upload-zone">
-            <input type="file" id="converter-input" accept="image/jpeg, image/png, image/webp" multiple style="display: none;">
-            <button type="button" class="btn" id="converter-upload-trigger">select images</button>
-            <span id="converter-status" class="status-text">no files selected</span>
+        <div class="tool-ui-box">
+          <div class="action-row">
+            <input type="text" id="example-input" placeholder="Enter text..." class="input-field">
+            <button type="button" class="btn" id="example-btn">exc</button>
+            <span id="example-status" class="status-text">ready</span>
           </div>
 
-          <div class="options-bar" style="margin: 16px 0; padding: 12px; background: var(--bg2); border-radius: 8px;">
-            <label>Convert to: 
-              <select id="format-select">
-                <option value="image/png">PNG (lossless)</option>
-                <option value="image/jpeg">JPEG</option>
-                <option value="image/webp">WebP</option>
-              </select>
-            </label>
-            
-            <label id="quality-label" style="margin-left: 20px; display: none;">
-              Quality: <span id="quality-value">85</span>%
-              <input type="range" id="quality-slider" min="10" max="100" value="85" style="width: 200px;">
-            </label>
-          </div>
-
-          <div class="preview-pane" id="converter-preview-area" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 12px;">
-              <span class="preview-label">converted previews</span>
-              <button type="button" class="btn download-btn" id="converter-download-all-btn" style="display: none;">download all</button>
+          <div class="output-pane" id="example-output-area" style="display: none;">
+            <div class="output-header">
+              <span class="output-label">output</span>
+              <button type="button" class="btn action-btn" id="example-copy-btn">Copy</button>
             </div>
-            <div id="converter-previews-container" style="display: flex; flex-direction: column; gap: 24px; width: 100%; margin-top: 12px;"></div>
+            <div class="output-display" id="example-display-container">
+              </div>
           </div>
         </div>
       </section>
-      <section id="metadata-remover" class="tool-section">
-        <h2>image metadata remover</h2>
-        <p class="tool-desc">strips EXIF, GPS, camera specs, and other hidden identifier tags from images by re-drawing the raw pixel payload onto a clean canvas container.</p>
-        
-        <div class="hotlink-container">
-          <div class="upload-zone">
-            <input type="file" id="image-input" accept="image/jpeg, image/png, image/webp" multiple style="display: none;">
-            <button type="button" class="btn" id="upload-trigger">select images</button>
-            <span id="file-status" class="status-text">no files selected</span>
-          </div>
+       <!-- end tool1 -->
 
-          <div class="preview-pane" id="preview-area" style="display: none; width: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 12px;">
-              <span class="preview-label">wiped previews</span>
-              <button type="button" class="btn download-btn" id="download-all-btn" style="display: none;">download all cleaned files</button>
-            </div>
-            <div id="previews-container" style="display: flex; flex-direction: column; gap: 24px; width: 100%; margin-top: 12px;"></div>
-          </div>
-        </div>
-      </section>
 
-    </main>
+
+  
+      </main>
   </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const uploadTrigger = document.getElementById('upload-trigger');
-  const imageInput = document.getElementById('image-input');
-  const statusText = document.getElementById('file-status');
-  const previewArea = document.getElementById('preview-area');
-  const previewsContainer = document.getElementById('previews-container');
-  const downloadAllBtn = document.getElementById('download-all-btn');
-  let processedFiles = [];
-
-  uploadTrigger.addEventListener('click', (e) => {
-    e.preventDefault();
-    imageInput.click();
-  });
-
-  imageInput.addEventListener('change', function(e) {
-    const files = e.target.files;
-    if (!files || files.length === 0) {
-      statusText.textContent = "no file selected";
-      return;
-    }
-
-    const totalFiles = files.length;
-    statusText.textContent = `processing 1 of ${totalFiles}...`;
-    
-    previewsContainer.innerHTML = '';
-    previewArea.style.display = 'flex';
-    downloadAllBtn.style.display = totalFiles > 1 ? 'inline-block' : 'none';
-    
-    processedFiles = []; 
-    let completedCount = 0;
-    let failedCount = 0;
-
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-
-      reader.onload = function(event) {
-        const img = new Image();
-        
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
-          
-          try {
-            const cleanDataUrl = canvas.toDataURL('image/png');
-            const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-            const cleanedFileName = `${baseName}_ats.png`;
-            processedFiles.push({ url: cleanDataUrl, name: cleanedFileName });
-            const fileRow = document.createElement('div');
-            fileRow.style.cssText = "display: flex; flex-direction: column; gap: 10px; align-items: flex-start; width: 100%; border-bottom: 1px dashed var(--border); padding-bottom: 16px;";
-            
-            fileRow.innerHTML = `
-              <span style="font-size: 15px; color: var(--accent2);">${file.name}</span>
-              <div class="img-frame">
-                <img src="${cleanDataUrl}" alt="processed output preview" style="display: block; max-width: 100%; max-height: 250px; image-rendering: pixelated; image-rendering: crisp-edges;">
-              </div>
-              <a href="${cleanDataUrl}" download="${cleanedFileName}" class="btn download-btn">download cleaned file</a>
-            `;
-
-            previewsContainer.appendChild(fileRow);
-
-            completedCount++;
-            updateBatchStatus(completedCount, failedCount, totalFiles);
-
-          } catch (canvasErr) {
-            console.error("canvas error:", canvasErr);
-            failedCount++;
-            updateBatchStatus(completedCount, failedCount, totalFiles);
-          }
-        };
-
-        img.onerror = function() {
-          console.error("img load failed for:", file.name);
-          failedCount++;
-          updateBatchStatus(completedCount, failedCount, totalFiles);
-        };
-
-        img.src = event.target.result;
-      };
-
-      reader.onerror = function() {
-        console.error("filereader error for:", file.name);
-        failedCount++;
-        updateBatchStatus(completedCount, failedCount, totalFiles);
-      };
-
-      reader.readAsDataURL(file);
-    });
-
-    function updateBatchStatus(success, fail, total) {
-      if (success + fail < total) {
-        statusText.textContent = `processing ${success + fail + 1} of ${total}...`;
-      } else {
-        if (fail > 0) {
-          statusText.textContent = `done. cleaned: ${success}, failed: ${fail}`;
-        } else {
-          statusText.textContent = `all ${success} files stripped successfully.`;
-        }
-        imageInput.value = '';
-      }
-    }
-  });
-  downloadAllBtn.addEventListener('click', () => {
-    processedFiles.forEach((file, index) => {
-      setTimeout(() => {
-        const link = document.createElement('a');
-        link.href = file.url;
-        link.download = file.name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, index * 250); 
-    });
-  });
-});
-  
-// image converter
-const converterUploadTrigger = document.getElementById('converter-upload-trigger');
-const converterInput = document.getElementById('converter-input');
-const converterStatus = document.getElementById('converter-status');
-const converterPreviewArea = document.getElementById('converter-preview-area');
-const converterPreviewsContainer = document.getElementById('converter-previews-container');
-const converterDownloadAllBtn = document.getElementById('converter-download-all-btn');
-const formatSelect = document.getElementById('format-select');
-const qualitySlider = document.getElementById('quality-slider');
-const qualityValue = document.getElementById('quality-value');
-const qualityLabel = document.getElementById('quality-label');
-
-let convertedFiles = [];
-
-qualitySlider.addEventListener('input', () => {
-  qualityValue.textContent = qualitySlider.value;
-});
-
-formatSelect.addEventListener('change', () => {
-  qualityLabel.style.display = (formatSelect.value === 'image/png') ? 'none' : 'inline-block';
-});
-
-converterUploadTrigger.addEventListener('click', () => converterInput.click());
-
-converterInput.addEventListener('change', function(e) {
-  const files = e.target.files;
-  if (!files || files.length === 0) return;
-
-  const totalFiles = files.length;
-  converterStatus.textContent = `processing 1 of ${totalFiles}...`;
-
-  converterPreviewsContainer.innerHTML = '';
-  converterPreviewArea.style.display = 'block';
-  converterDownloadAllBtn.style.display = totalFiles > 1 ? 'inline-block' : 'none';
-
-  convertedFiles = [];
-  let completed = 0;
-  let failed = 0;
-
-  Array.from(files).forEach(file => {
-    const reader = new FileReader();
-    
-    reader.onload = function(event) {
-      const img = new Image();
-      
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        const format = formatSelect.value;
-        const quality = format === 'image/png' ? undefined : qualitySlider.value / 100;
-
-        const convertedDataUrl = canvas.toDataURL(format, quality);
-
-        const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-        const ext = format === 'image/png' ? 'png' : 
-                   format === 'image/jpeg' ? 'jpg' : 'webp';
-        const newFileName = `${baseName}_converted.${ext}`;
-
-        convertedFiles.push({ url: convertedDataUrl, name: newFileName });
-
-        const fileRow = document.createElement('div');
-        fileRow.style.cssText = "display: flex; flex-direction: column; gap: 10px; align-items: flex-start; width: 100%; border-bottom: 1px dashed var(--border); padding-bottom: 16px;";
-
-        fileRow.innerHTML = `
-          <span style="font-size: 15px; color: var(--accent2);">${file.name} → ${ext.toUpperCase()}</span>
-          <div class="img-frame">
-            <img src="${convertedDataUrl}" alt="converted" style="display: block; max-width: 100%; max-height: 250px; image-rendering: pixelated;">
-          </div>
-          <a href="${convertedDataUrl}" download="${newFileName}" class="btn download-btn">download ${ext.toUpperCase()}</a>
-        `;
-
-        converterPreviewsContainer.appendChild(fileRow);
-        
-        completed++;
-        updateConverterStatus(completed, failed, totalFiles);
-      };
-
-      img.onerror = () => {
-        failed++;
-        updateConverterStatus(completed, failed, totalFiles);
-      };
-
-      img.src = event.target.result;
-    };
-
-    reader.onerror = () => {
-      failed++;
-      updateConverterStatus(completed, failed, totalFiles);
-    };
-
-    reader.readAsDataURL(file);
-  });
-});
-
-function updateConverterStatus(success, fail, total) {
-  if (success + fail < total) {
-    converterStatus.textContent = `processing ${success + fail + 1} of ${total}...`;
-  } else {
-    converterStatus.textContent = fail > 0 
-      ? `done. converted: ${success}, failed: ${fail}` 
-      : `all ${success} images converted successfully.`;
-    converterInput.value = '';
-  }
-}
-
-converterDownloadAllBtn.addEventListener('click', () => {
-  convertedFiles.forEach((file, i) => {
-    setTimeout(() => {
-      const a = document.createElement('a');
-      a.href = file.url;
-      a.download = file.name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }, i * 300);
-  });
-});
-</script>
-</body>
+  </body>
 </html>
