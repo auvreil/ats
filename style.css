@@ -53,7 +53,6 @@ h1 {
 h1.subtitle {
   font-size: clamp(14px, 3vw, 20px);
   color: var(--text-muted);
-  animation-delay: 3s;
 }
 
 @keyframes flicker {
@@ -64,48 +63,13 @@ h1.subtitle {
   99% { opacity: 1; }
 }
 
-h2.notice {
-  font-family: 'VT323', monospace;
-  font-size: 17px;
-  color: var(--accent4);
-  text-align: center;
-  margin: 10px auto 24px;
-  max-width: 680px;
-  padding: 6px 12px;
-  border-left: 2px solid var(--accent4);
-  background: rgba(255, 184, 108, 0.03);
-}
-
-.nav {
-  text-align: center;
-  margin: 20px 0;
-}
-
-.nav a {
-  font-family: 'Silkscreen', monospace;
-  font-size: 11px;
-  color: var(--text-dim);
-  text-decoration: none;
-  margin: 0 10px;
-  letter-spacing: 1px;
-  display: inline-block;
-  padding: 4px 0;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.1s, color 0.1s;
-}
-
-.nav a:hover, .nav a.active {
-  color: var(--accent5);
-  border-bottom-color: var(--accent5);
-}
-
 .nav-divider {
   border: none;
   border-top: 1px solid var(--border);
   margin: 16px 0 30px;
 }
 
-h2:not(.notice) {
+h2 {
   font-family: 'Silkscreen', monospace;
   font-size: 13px;
   color: var(--accent3);
@@ -113,6 +77,8 @@ h2:not(.notice) {
   letter-spacing: 2px;
   text-transform: uppercase;
 }
+
+/*standardize css for less change in future 4 tools */
 
 .tool-section {
   background: var(--panel);
@@ -127,7 +93,7 @@ h2:not(.notice) {
   margin-bottom: 20px;
 }
 
-.hotlink-container {
+.tool-ui-box {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -137,14 +103,32 @@ h2:not(.notice) {
   align-items: flex-start;
 }
 
-.upload-zone {
+.action-row {
   display: flex;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  width: 100%;
+}
+.input-field, select, textarea {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  padding: 6px 12px;
+  outline: none;
 }
 
-/* Functionalized Button Styles matching your project architecture */
+.input-field:focus, select:focus, textarea:focus {
+  border-color: var(--accent2);
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 100px;
+}
 .btn {
   display: inline-block;
   font-family: 'Silkscreen', monospace;
@@ -169,8 +153,8 @@ h2:not(.notice) {
   font-size: 16px;
   color: var(--text-muted);
 }
-
-.preview-pane {
+/*auvery was here 7/4/2026 14:34*/
+.output-pane {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -180,7 +164,16 @@ h2:not(.notice) {
   padding-top: 20px;
 }
 
-.preview-label {
+.output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.output-label {
   font-family: 'Silkscreen', monospace;
   font-size: 10px;
   color: var(--accent4);
@@ -188,40 +181,26 @@ h2:not(.notice) {
   letter-spacing: 1px;
 }
 
-.img-frame {
-  border: 1px solid var(--border);
-  padding: 4px;
+.output-display {
+  width: 100%;
   background: var(--panel);
-  max-width: 100%;
+  border: 1px solid var(--border);
+  padding: 12px;
+  font-family: 'VT323', monospace;
+  color: var(--accent5);
+  word-break: break-all;
 }
 
-.preview-pane img {
-  display: block;
-  max-width: 100%;
-  max-height: 300px;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-}
-
-.download-btn {
+.action-btn {
   color: var(--accent3);
   border-color: var(--border);
 }
 
-.download-btn:hover {
+.action-btn:hover {
   color: var(--bg);
   background: var(--accent3);
   border-color: var(--accent3);
 }
-
-.disclaimer {
-  margin-top: 40px;
-  padding: 16px 0 0;
-  border-top: 1px solid var(--border);
-  font-size: 15px;
-  color: var(--text-muted);
-}
-
 ::-webkit-scrollbar {
   width: 8px;
   background: var(--bg);
@@ -239,7 +218,5 @@ h2:not(.notice) {
 @media (max-width: 480px) {
   h1 { font-size: 24px; }
   h1.subtitle { font-size: 14px; }
-  h2:not(.notice) { font-size: 11px; }
-  .nav a { font-size: 9px; margin: 0 4px; }
   .tool-section { padding: 16px; }
 }
